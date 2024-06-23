@@ -53,7 +53,7 @@ def shortest_path_turn_penalty(G, source, target, weight="travel_time", penalty=
     push = heappush
     pop = heappop
     dist = {}  # dictionary of final distances
-    paths = {source: [source]}
+    paths = {}
     target_list = [target] if not isinstance(target, list) else target
     reached_target = None
 
@@ -66,6 +66,7 @@ def shortest_path_turn_penalty(G, source, target, weight="travel_time", penalty=
         for m,_ in G_succ[source].items():
             seen[source][m] = 0
             push(fringe, (0, next(c), source, m))
+            paths[source, m] = [source, m]
     else:
         push(fringe, (0, next(c), source, next_node))
 
@@ -102,9 +103,13 @@ def shortest_path_turn_penalty(G, source, target, weight="travel_time", penalty=
                     seen[u] = {}
                 seen[u][m] = vu_dist
                 push(fringe, (vu_dist, next(c), u, m))
-                if paths is not None:
-                    paths[u] = paths[v] + [u]
+                paths[u, m] = paths[v, u] + [m]
+                #if (u, m) in paths and len(paths[u]) > 1:
+                #    if vu_dist < seen[paths[u][-2]][paths[u][-1]]:
+                #        paths[u] = paths[v] + [u]
+                #else:
+                #    paths[u] = paths[v] + [u]
 
     # The optional predecessor and path dictionaries can be accessed
     # by the caller via the pred and paths objects passed as arguments.
-    return paths[reached_target]
+    return paths[v, u]
